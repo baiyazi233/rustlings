@@ -11,7 +11,7 @@ use std::str::FromStr;
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
-    age: u8,
+    age: usize,
 }
 
 // We will use this error type for the `FromStr` implementation.
@@ -41,7 +41,25 @@ enum ParsePersonError {
 impl FromStr for Person {
     type Err = ParsePersonError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {}
+    fn from_str(s: &str) -> Result<Person, Self::Err> {
+        if s.is_empty() {
+            return Err(ParsePersonError::BadLen);
+        }
+
+        let parts: Vec<&str> = s.split(',').collect();
+        if parts.len() != 2 {
+            return Err(ParsePersonError::BadLen);
+        }
+
+        let name = parts[0].to_string();
+        if name.is_empty() {
+            return Err(ParsePersonError::NoName);
+        }
+
+        let age = parts[1].parse::<usize>().map_err(ParsePersonError::ParseInt)?;
+
+        Ok(Person { name, age })
+    }
 }
 
 fn main() {
